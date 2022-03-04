@@ -83,16 +83,6 @@ function appendElementsToArticle(article, img, title, desc) {
 (async function fetchApiData() {
   const res = await fetch("http://localhost:3000/api/products");
   const apiData = await res.json();
-  if (res.ok) {
-    console.log(
-      "([ ----- SUCCESS ----- ]): API data was successfully retrieved "
-    );
-    console.log(res);
-    console.log("([ ----- API DATA ARRAY ----- ]):");
-    console.table(apiData);
-  } else {
-    console.log("([ ----- ERROR ----- ]): unable to fetch data from API");
-  }
 
   document.querySelector("#items").innerHTML = apiData
     .map(
