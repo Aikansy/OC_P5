@@ -1,85 +1,62 @@
-fetch("http://localhost:3000/api/products")
-  .then((response) => response.json())
-  .then((data) => apiData(data));
+// VARIABLES ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-/** apiData Function description
- * With the data fetch from the api, the function creates article for each element of the array.
- */
-function apiData(data) {
-  console.table(data);
+// STORAGE
+let products = [];
 
-  /** forEach description
-   * Execute the function on each keys defined in product
-   */
-  data.forEach((product) => {
-    const { _id, name, imageUrl, description, altTxt } = product;
+// SELECTION VARIABLES
+const items = document.getElementById("items");
 
+// FUNCTIONS ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+// FETCH FUNCTION
+async function fetchApiData() {
+  await fetch("https://api-kanap-eu.herokuapp.com/api/products")
+    .then((res) => res.json())
+    .then((data) => {
+      products = data;
+      console.table(products);
+    });
+}
+
+// DISPLAY FUNCTION
+const productsDisplay = (async () => {
+  await fetchApiData();
+
+  products.forEach((product) => {
+    const { _id, name, imageUrl, description, altTxt } = product; // descruturing method: write js faster
+
+    const link = document.createElement("a");
     const article = document.createElement("article");
-    const link = createLink(_id);
-    const title = createTitle(name);
-    const img = createImage(imageUrl, altTxt);
-    const desc = createDesc(description);
+    const articleImg = document.createElement("img");
+    const articleTitle = document.createElement("h3");
+    const articleDescription = document.createElement("p");
 
-    appendArticleTolink(link, article);
-    appendElementsToArticle(article, img, title, desc);
+    items.appendChild(link);
+    link.appendChild(article);
+    article.append(articleImg, articleTitle, articleDescription);
+
+    link.href = `./product.html?id=${_id}`;
+
+    articleImg.src = `${imageUrl}`;
+    articleImg.alt = `${altTxt}`;
+
+    articleTitle.classList.add("productName");
+    articleTitle.textContent = `${name}`;
+
+    articleDescription.classList.add("productDescription");
+    articleDescription.textContent = `${description}`;
   });
-}
-
-// Function: link element creationS
-function createLink(id) {
-  const productLink = document.createElement("a");
-  productLink.href = "./product.html?id=" + id;
-  return productLink;
-}
-
-// Function: img element creation
-function createImage(imageUrl, altTxt) {
-  const productImage = document.createElement("img");
-  productImage.src = imageUrl;
-  productImage.alt = altTxt;
-  return productImage;
-}
-
-// Function: title element creation
-function createTitle(name) {
-  const productTitle = document.createElement("h3");
-  productTitle.textContent = name;
-  productTitle.classList.add("productName");
-  return productTitle;
-}
-
-// Function: description element creation
-function createDesc(description) {
-  const productDesc = document.createElement("p");
-  productDesc.textContent = description;
-  productDesc.classList.add("productDescription");
-  return productDesc;
-}
-
-// Function: Appendchild article to link
-function appendArticleTolink(link, article) {
-  const items = document.querySelector("#items");
-  items.appendChild(link);
-  link.appendChild(article);
-}
-
-// Function: Appendchild elements (img, title and description) to article
-function appendElementsToArticle(article, img, title, desc) {
-  article.appendChild(img);
-  article.appendChild(title);
-  article.appendChild(desc);
-}
+})();
 
 /****************************************************************************************************** */
 
-/** SHORT VERSION w innerHTML
- * Fetch asynchronous automatic function
- * Console log: Sucess or Error
- * Console log: localhost default port 3000
- * Console log: API data
+/** VERY SHORT VERSION
+ * w innerHTML
+ * pros: size
  */
 
 /*
+
 (async function fetchApiData() {
   const res = await fetch("http://localhost:3000/api/products");
   const apiData = await res.json();
@@ -97,4 +74,5 @@ function appendElementsToArticle(article, img, title, desc) {
     )
     .join("");
 })();
+
 */
