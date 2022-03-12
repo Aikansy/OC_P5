@@ -23,7 +23,7 @@ const productsDisplay = (async () => {
   await fetchApiData();
 
   products.forEach((product) => {
-    const { _id, name, imageUrl, description, altTxt } = product; // descruturing method: write js faster
+    const { _id, name, imageUrl, description, altTxt } = product; // descruturing: write js faster
 
     const link = document.createElement("a");
     const article = document.createElement("article");
@@ -50,29 +50,73 @@ const productsDisplay = (async () => {
 
 /****************************************************************************************************** */
 
-/** VERY SHORT VERSION
- * w innerHTML
- * pros: size
+/** LONG VERSION
+ * w forEach
+ * pros: clarity
  */
 
 /*
 
-(async function fetchApiData() {
-  const res = await fetch("http://localhost:3000/api/products");
-  const apiData = await res.json();
-
-  document.querySelector("#items").innerHTML = apiData
-    .map(
-      (item) =>
-        `<a href="./product.html?${item._id}>
-      <article>
-        <img src="${item.imageUrl}" alt="${item.altTxt} width=160px height=160px">
-        <h3 class="productName">${item.name}</h3>
-        <p class="productDescription">${item.description}</p>
-      </article>
-    </a>`
-    )
-    .join("");
+const fetchProductData = (async () => {
+  await fetch(`http://localhost:3000/api/products`)
+    .then((response) => response.json())
+    .then((data) => productsDisplay(data));
 })();
 
-*/
+function productsDisplay(data) {
+  console.table(data);
+
+  data.forEach((product) => {
+    const { _id, name, imageUrl, description, altTxt } = product;
+
+    const article = document.createElement("article");
+    const link = createLink(_id);
+    const title = createTitle(name);
+    const img = createImage(imageUrl, altTxt);
+    const desc = createDesc(description);
+
+    appendArticleTolink(link, article);
+    appendElementsToArticle(article, img, title, desc);
+  });
+}
+
+function createLink(id) {
+  const productLink = document.createElement("a");
+  productLink.href = "./product.html?id=" + id;
+  return productLink;
+}
+
+function createImage(imageUrl, altTxt) {
+  const productImage = document.createElement("img");
+  productImage.src = imageUrl;
+  productImage.alt = altTxt;
+  return productImage;
+}
+
+function createTitle(name) {
+  const productTitle = document.createElement("h3");
+  productTitle.textContent = name;
+  productTitle.classList.add("productName");
+  return productTitle;
+}
+
+function createDesc(description) {
+  const productDesc = document.createElement("p");
+  productDesc.textContent = description;
+  productDesc.classList.add("productDescription");
+  return productDesc;
+}
+
+function appendArticleTolink(link, article) {
+  const items = document.querySelector("#items");
+  items.appendChild(link);
+  link.appendChild(article);
+}
+
+function appendElementsToArticle(article, img, title, desc) {
+  article.appendChild(img);
+  article.appendChild(title);
+  article.appendChild(desc);
+}
+
+END */
