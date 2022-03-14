@@ -1,52 +1,52 @@
 // VARIABLES ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// STORAGE
-let products = [];
+// // STORAGE
+// let products = [];
 
-// SELECTION VARIABLES
-const items = document.getElementById("items");
+// // SELECTION VARIABLES
+// const items = document.getElementById("items");
 
-// FUNCTIONS ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// // FUNCTIONS ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// FETCH FUNCTION
-async function fetchApiData() {
-  await fetch("https://api-kanap-eu.herokuapp.com/api/products")
-    .then((res) => res.json())
-    .then((data) => {
-      products = data;
-      console.table(products);
-    });
-}
+// // FETCH FUNCTION
+// async function fetchApiData() {
+//   await fetch("https://api-kanap-eu.herokuapp.com/api/products")
+//     .then((res) => res.json())
+//     .then((data) => {
+//       products = data;
+//       console.table(products);
+//     });
+// }
 
-// DISPLAY FUNCTION
-const productsDisplay = (async () => {
-  await fetchApiData();
+// // DISPLAY FUNCTION
+// const productsDisplay = (async () => {
+//   await fetchApiData();
 
-  products.forEach((product) => {
-    const { _id, name, imageUrl, description, altTxt } = product; // descruturing: write js faster
+//   products.forEach((product) => {
+//     const { _id, name, imageUrl, description, altTxt } = product; // descruturing: write js faster
 
-    const link = document.createElement("a");
-    const article = document.createElement("article");
-    const articleImg = document.createElement("img");
-    const articleTitle = document.createElement("h3");
-    const articleDescription = document.createElement("p");
+//     const link = document.createElement("a");
+//     const article = document.createElement("article");
+//     const articleImg = document.createElement("img");
+//     const articleTitle = document.createElement("h3");
+//     const articleDescription = document.createElement("p");
 
-    items.appendChild(link);
-    link.appendChild(article);
-    article.append(articleImg, articleTitle, articleDescription);
+//     items.appendChild(link);
+//     link.appendChild(article);
+//     article.append(articleImg, articleTitle, articleDescription);
 
-    link.href = `./product.html?id=${_id}`;
+//     link.href = `./product.html?id=${_id}`;
 
-    articleImg.src = `${imageUrl}`;
-    articleImg.alt = `${altTxt}`;
+//     articleImg.src = `${imageUrl}`;
+//     articleImg.alt = `${altTxt}`;
 
-    articleTitle.classList.add("productName");
-    articleTitle.textContent = `${name}`;
+//     articleTitle.classList.add("productName");
+//     articleTitle.textContent = `${name}`;
 
-    articleDescription.classList.add("productDescription");
-    articleDescription.textContent = `${description}`;
-  });
-})();
+//     articleDescription.classList.add("productDescription");
+//     articleDescription.textContent = `${description}`;
+//   });
+// })();
 
 /****************************************************************************************************** */
 
@@ -54,8 +54,6 @@ const productsDisplay = (async () => {
  * w forEach
  * pros: clarity
  */
-
-/*
 
 const fetchProductData = (async () => {
   await fetch(`http://localhost:3000/api/products`)
@@ -118,5 +116,3 @@ function appendElementsToArticle(article, img, title, desc) {
   article.appendChild(title);
   article.appendChild(desc);
 }
-
-END */
