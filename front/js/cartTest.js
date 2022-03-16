@@ -1,92 +1,55 @@
 // VARIABLES ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// SELECTION CONSTANTS
+// RETRIEVE PRODUCTS FROM LOCALSTORAGE
+let addedProduct = JSON.parse(localStorage.getItem("product"));
+
+// SELECTION VARIABLES
 let cart = document.querySelector(".cart");
-let sectionCart = document.getElementById("cart__items");
+let cartArticle = document.querySelector("#cart__items");
 let cartPrice = document.querySelector(".cart__price");
 let cartOrder = document.querySelector(".cart__order");
-let deleteButton = document.getElementsByClassName("deleteItem");
-let orderButton = document.getElementById("order");
 
-// EMPTY CART FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// CHECK CART FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-(function alertEmptyCart() {
-  if (localStorage.length === 0) {
-    let emptyCartMessage = createEmptyCartMessage();
-
-    appendEmptyCartElementToSection(emptyCartMessage);
-    cart.removeChild(cartPrice);
-    cart.removeChild(cartOrder);
+(async function checkCart() {
+  if (addedProduct) {
+    await addedProduct;
+    console.log("+++++ LOCAL STORAGE ARRAY:");
+    console.table(addedProduct);
+    displayCart();
   } else {
-    console.table(localStorage);
+    const alertMessage = createAlertMessage();
+    appendAlertMessage(alertMessage);
+    removeElementFromSection(cart, cartPrice, cartOrder);
   }
 })();
 
-function createEmptyCartMessage() {
-  let emptyCartMessage = document.createElement("h3");
-  emptyCartMessage.style.textAlign = "center";
-  emptyCartMessage.style.marginBottom = "100px";
-  emptyCartMessage.textContent = "Aucun article n'a été ajouté au panier";
-  return emptyCartMessage;
+// DISPLAY CART FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function displayCart() {
+  addedProduct.forEach((product) => {
+    console.log(`+++++ PRODUCT DATA:`);
+    console.table(product);
+
+    productsDisplay(product);
+  });
 }
 
-function appendEmptyCartElementToSection(emptyCartMessage) {
-  sectionCart.appendChild(emptyCartMessage);
-}
+// DISPLAY CART FUNCTION / CARD DISPLAY FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// ADD-TO-CART FETCH LOOP +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-(async function automaticFilling() {
-  for (let i = 0; i <= localStorage.length; i++) {
-    if (localStorage.key(i)) {
-      let cartProduct = JSON.parse(localStorage.getItem(localStorage.key(i)));
-      let productId = cartProduct[0].id;
-      let productColor = cartProduct[0].color;
-      let productQuantity = cartProduct[0].quantity;
-      let productImage = cartProduct[0].imageUrl;
-      let productAltTxt = cartProduct[0].altTxt;
-      let productName = cartProduct[0].name;
-      let productPrice = cartProduct[0].price;
-
-      console.table(cartProduct);
-
-      cartDisplay(
-        productId,
-        productColor,
-        productQuantity,
-        productImage,
-        productAltTxt,
-        productName,
-        productPrice
-      );
-    }
-  }
-})();
-
-// CARD DISPLAY FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-// CARD DISPLAY FUNCTION
-function cartDisplay(
-  productId,
-  productColor,
-  productQuantity,
-  productImage,
-  productAltTxt,
-  productName,
-  productPrice
-) {
-  const cartItem = createCartItem(productId, productColor);
+function productsDisplay(product) {
+  const cartItem = createCartItem(product);
   const imgDiv = createImgDiv();
-  const img = createImage(productImage, productAltTxt);
+  const img = createImage(product);
   const contentDiv = createContentDiv();
   const descriptionDiv = createDescriptionDiv();
-  const title = createTitle(productName);
-  const color = createColor(productColor);
-  const price = createPrice(productPrice);
+  const title = createTitle(product);
+  const color = createColor(product);
+  const price = createPrice(product);
   const settingsDiv = createSettingsDivs();
   const quantityDiv = createQuantityDiv();
   const quantity = createQuantity();
-  const quantityInput = createQuantityInput(productQuantity);
+  const quantityInput = createQuantityInput(product);
   const deleteDiv = createDeleteDiv();
   const deleteQuantity = createDeleteButton();
 
@@ -108,13 +71,13 @@ function cartDisplay(
   );
 }
 
-// ELEMENT CREATION FUNCTIONS FOR CARD DISPLAY FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++
+// DISPLAY CART FUNCTION / ELEMENT CREATION FUNCTIONS +++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-function createCartItem(productId, productColor) {
+function createCartItem(product) {
   let cartItem = document.createElement("article");
   cartItem.classList.add("cart__item");
-  cartItem.setAttribute("data-id", productId);
-  cartItem.setAttribute("data-color", productColor);
+  cartItem.setAttribute("data-id", product.id);
+  cartItem.setAttribute("data-color", product.color);
   return cartItem;
 }
 
@@ -124,10 +87,10 @@ function createImgDiv() {
   return imgDiv;
 }
 
-function createImage(productImage, productAltTxt) {
+function createImage(product) {
   let image = document.createElement("img");
-  image.src = productImage;
-  image.alt = productAltTxt;
+  image.src = product.imageUrl;
+  image.alt = product.altTxt;
   image.style.height = "100%";
   image.style.width = "130%";
   return image;
@@ -145,21 +108,21 @@ function createDescriptionDiv() {
   return descriptionDiv;
 }
 
-function createTitle(productName) {
+function createTitle(product) {
   let title = document.createElement("h2");
-  title.textContent = productName;
+  title.textContent = product.name;
   return title;
 }
 
-function createColor(productColor) {
+function createColor(product) {
   let color = document.createElement("p");
-  color.textContent = productColor;
+  color.textContent = product.color;
   return color;
 }
 
-function createPrice(productPrice) {
+function createPrice(product) {
   let price = document.createElement("p");
-  price.textContent = productPrice;
+  price.textContent = product.price;
   return price;
 }
 
@@ -181,14 +144,14 @@ function createQuantity() {
   return quantity;
 }
 
-function createQuantityInput(productQuantity) {
+function createQuantityInput(product) {
   let input = document.createElement("input");
   input.setAttribute("type", "number");
   input.classList.add("itemQuantity");
   input.setAttribute("name", "itemQuantity");
   input.setAttribute("min", "1");
   input.setAttribute("max", "100");
-  input.setAttribute("value", productQuantity);
+  input.setAttribute("value", product.quantity);
   return input;
 }
 
@@ -205,7 +168,7 @@ function createDeleteButton() {
   return deleteBtn;
 }
 
-// APPENDCHILD FUNCTION FOR CARD DISPLAY FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// CARD DISPLAY FUNCTION / APPENDCHILD FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 function contentToSection(
   cartItem,
@@ -223,8 +186,6 @@ function contentToSection(
   deleteDiv,
   deleteQuantity
 ) {
-  let cartArticle = document.querySelector("#cart__items");
-
   cartArticle.appendChild(cartItem);
   cartItem.appendChild(imgDiv);
   imgDiv.appendChild(img);
@@ -239,4 +200,27 @@ function contentToSection(
   quantityDiv.appendChild(quantityInput);
   settingsDiv.appendChild(deleteDiv);
   deleteDiv.appendChild(deleteQuantity);
+}
+
+// CHECK CART FUNCTION / CREATE ALERT MESSAGE FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function createAlertMessage() {
+  let alertMessage = document.createElement("h3");
+  alertMessage.style.textAlign = "center";
+  alertMessage.style.marginBottom = "100px";
+  alertMessage.textContent = "Aucun article n'a été ajouté au panier";
+  return alertMessage;
+}
+
+// CHECK CART FUNCTION / APPENDCHILD ALERT MESSAGE FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++
+
+function appendAlertMessage(alertMessage) {
+  cartArticle.appendChild(alertMessage);
+}
+
+// CHECK CART FUNCTION / REMOVE ELEMENT FROM SECTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function removeElementFromSection(cart, cartPrice, cartOrder) {
+  cart.removeChild(cartPrice);
+  cart.removeChild(cartOrder);
 }

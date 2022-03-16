@@ -2,27 +2,24 @@
 
 // SELECTION CONSTANTS
 let cart = document.querySelector(".cart");
-let sectionCart = document.getElementById("cart__items");
+let cartArticle = document.querySelector("#cart__items");
 let cartPrice = document.querySelector(".cart__price");
 let cartOrder = document.querySelector(".cart__order");
-let deleteButton = document.getElementsByClassName("deleteItem");
-let orderButton = document.getElementById("order");
 
-// EMPTY CART FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// CHECK CART FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-(function alertEmptyCart() {
+(function checkCart() {
   if (localStorage.length === 0) {
-    let emptyCartMessage = createEmptyCartMessage();
+    const alertMessage = createAlertMessage();
 
-    appendEmptyCartElementToSection(emptyCartMessage);
-    cart.removeChild(cartPrice);
-    cart.removeChild(cartOrder);
+    appendAlertMessage(alertMessage);
+    removeElementToSection(cart, cartPrice, cartOrder);
   } else {
     console.table(localStorage);
   }
 })();
 
-function createEmptyCartMessage() {
+function createAlertMessage() {
   let emptyCartMessage = document.createElement("h3");
   emptyCartMessage.style.textAlign = "center";
   emptyCartMessage.style.marginBottom = "100px";
@@ -30,16 +27,22 @@ function createEmptyCartMessage() {
   return emptyCartMessage;
 }
 
-function appendEmptyCartElementToSection(emptyCartMessage) {
-  sectionCart.appendChild(emptyCartMessage);
+function appendAlertMessage(alertMessage) {
+  cartArticle.appendChild(alertMessage);
 }
 
-// ADD-TO-CART FETCH LOOP +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+function removeElementToSection(cart, cartPrice, cartOrder) {
+  cart.removeChild(cartPrice);
+  cart.removeChild(cartOrder);
+}
+
+// AUTOMATIC FILLING FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 (async function automaticFilling() {
   for (let i = 0; i <= localStorage.length; i++) {
     if (localStorage.key(i)) {
       let cartProduct = JSON.parse(localStorage.getItem(localStorage.key(i)));
+
       let productId = cartProduct[0].id;
       let productColor = cartProduct[0].color;
       let productQuantity = cartProduct[0].quantity;
@@ -63,9 +66,8 @@ function appendEmptyCartElementToSection(emptyCartMessage) {
   }
 })();
 
-// CARD DISPLAY FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// CART DISPLAY FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// CARD DISPLAY FUNCTION
 function cartDisplay(
   productId,
   productColor,
@@ -90,7 +92,7 @@ function cartDisplay(
   const deleteDiv = createDeleteDiv();
   const deleteQuantity = createDeleteButton();
 
-  contentToSection(
+  appendContentToSection(
     cartItem,
     imgDiv,
     img,
@@ -108,7 +110,7 @@ function cartDisplay(
   );
 }
 
-// ELEMENT CREATION FUNCTIONS FOR CARD DISPLAY FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++
+// CART DISPLAY FUNCTION / ELEMENT CREATION FUNCTIONS +++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 function createCartItem(productId, productColor) {
   let cartItem = document.createElement("article");
@@ -205,9 +207,9 @@ function createDeleteButton() {
   return deleteBtn;
 }
 
-// APPENDCHILD FUNCTION FOR CARD DISPLAY FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// CARD DISPLAY FUNCTION / APPENDCHILD CONTENT FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-function contentToSection(
+function appendContentToSection(
   cartItem,
   imgDiv,
   img,

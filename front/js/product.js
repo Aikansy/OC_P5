@@ -17,9 +17,8 @@ const addToCartButton = document.getElementById("addToCart");
 
 quantitySelector.value = "";
 
-// FUNCTIONS ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// FETCH FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// FETCH FUNCTION
 async function fetchApiProductData() {
   await fetch(`http://localhost:3000/api/products/${productId}`)
     .then((res) => res.json())
@@ -32,18 +31,29 @@ async function fetchApiProductData() {
     });
 }
 
-// DISPLAY FUNCTION
-const productDisplay = (async () => {
+// DISPLAY FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+(async function productDisplay() {
   await fetchApiProductData();
 
-  // DISPLAY: TAB TITLE, TITLE, IMG, PRICE, DESCRIPTION
+  elementDisplay();
+  productColorDisplay();
+  addToLocalStorage(productData);
+})();
+
+// DISPLAY FUNCTION / ELEMENT DISPLAY FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function elementDisplay() {
   document.title = productData.name;
   productImg.innerHTML = `<img src="${productData.imageUrl}" alt="${productData.altTxt}"></img>`;
   productTitle.innerHTML = productData.name;
   productPrice.innerHTML = productData.price;
   productDescription.innerHTML = productData.description;
+}
 
-  // DISPLAY: COLOR
+// DISPLAY FUNCTION / PRODUCT COLOR DISPLAY FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function productColorDisplay() {
   productData.colors.forEach((productColors) => {
     document.createElement("option");
     let colorOption = document.createElement("option");
@@ -53,64 +63,89 @@ const productDisplay = (async () => {
 
     colorSelector.appendChild(colorOption);
   });
+}
 
-  addToCart(productData);
-})();
+// DISPLAY FUNCTION / ADD TO LOCALSTORAGE FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-// ADD PRODUCT(S) TO CART FUNCTION
-const addToCart = () => {
+function addToLocalStorage() {
   addToCartButton.addEventListener("click", () => {
-    // LOCAL STORAGE
     let storage = JSON.parse(
-      //localStorage.getItem(`${productData.name} ${colorSelector.value}`)
-      localStorage.getItem("product")
+      localStorage.getItem(`${productData.name} ${colorSelector.value}`)
     );
 
-    // USER CART
     const userCart = Object.assign({}, storage, {
-      id: productId,
       color: `${colorSelector.value}`,
       quantity: `${quantitySelector.value}`,
       imageUrl: productData.imageUrl,
       altTxt: productData.altTxt,
       name: productData.name,
       price: productData.price,
+      id: productId,
     });
 
-    // IF A COLOR AND A QUANTITY HAVE NOT BEEN DEFINED
-    if (colorSelector.value == "" || quantitySelector.value == "") {
-      alert(
-        "CHAMPS OBLIGATOIRES : \nVeuillez sélectionner une couleur et une quantité."
-      );
-    }
-    // ELSE
-    else {
-      // IF THE LOCAL STORAGE IS EMPTY: CREATION OF AN ARRAY AND SENDS DATA TO THE LOCAL STORAGE
-      if (storage == null) {
-        storage = [];
-        storage.push(userCart);
-        localStorage.setItem(
-          `${productData.name} ${colorSelector.value}`,
-          JSON.stringify(storage)
-        );
-        console.log("+++++ LOCAL STORAGE ARRAY: NEW QUANTITY");
-        console.table(storage);
-      }
-      // ELSE: MODIFICATION OF THE QUANTITY OF THE SELECTED PRODUCT
-      else {
-        let getProduct = storage.find(
-          (element) =>
-            element.id == userCart.id && element.color == userCart.color
-        );
-        getProduct.quantity = userCart.quantity;
-        localStorage.setItem(
-          `${productData.name} ${colorSelector.value}`,
-          JSON.stringify(storage)
-        );
-        console.log("+++++ LOCAL STORAGE ARRAY: NEW QUANTITY");
-        console.table(storage);
-      }
-    }
+    addToLocalStorageCondition(
+      colorSelector,
+      quantitySelector,
+      storage,
+      userCart
+    );
   });
-  return (storage = JSON.parse(localStorage.getItem("produit")));
-};
+  return (storage = JSON.parse(
+    localStorage.getItem(`${productData.name} ${colorSelector.value}`)
+  ));
+}
+
+// ADD TO LOCALSTORAGE FUNCTION / ADD TO LOCALSTORAGE CONDITION FUNCTION +++++++++++++++++++++++++++++++++++++
+
+function addToLocalStorageCondition(
+  colorSelector,
+  quantitySelector,
+  storage,
+  userCart
+) {
+  if (colorSelector.value == "" || quantitySelector.value == "") {
+    alertMessage();
+  } else {
+    if (storage == null) {
+      createLocalStorage(storage, userCart);
+    } else {
+      modifyLocalStorage(storage, userCart);
+    }
+  }
+}
+
+// ADD TO LOCALSTORAGE FUNCTION / ALERT MESSAGE FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function alertMessage() {
+  alert(
+    "CHAMPS OBLIGATOIRES : \nVeuillez sélectionner une couleur et une quantité."
+  );
+}
+
+// ADD TO LOCALSTORAGE FUNCTION / CREATE LOCALSTORAGE FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++
+
+function createLocalStorage(storage, userCart) {
+  storage = [];
+  storage.push(userCart);
+  localStorage.setItem(
+    `${productData.name} ${colorSelector.value}`,
+    JSON.stringify(storage)
+  );
+  console.log("+++++ LOCAL STORAGE ARRAY: NEW QUANTITY");
+  console.table(storage);
+}
+
+// ADD TO LOCALSTORAGE FUNCTION / MODIFY LOCALSTORAGE FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++
+
+function modifyLocalStorage(storage, userCart) {
+  let getProduct = storage.find(
+    (element) => element.id == userCart.id && element.color == userCart.color
+  );
+  getProduct.quantity = userCart.quantity;
+  localStorage.setItem(
+    `${productData.name} ${colorSelector.value}`,
+    JSON.stringify(storage)
+  );
+  console.log("+++++ LOCAL STORAGE ARRAY: NEW QUANTITY");
+  console.table(storage);
+}
