@@ -1,151 +1,180 @@
-// VARIABLES ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-// ID RETRIEVAL CONSTANT
-const productId = window.location.search.replace("?id=", "");
+// VARIABLES +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // STORAGE VARIABLE
-let productData = [];
+let apiProductData = [];
+
+// ID RETRIEVAL CONSTANT
+const selectedId = window.location.search.replace("?id=", "");
 
 // SELECTION CONSTANTS
 const productImg = document.querySelector(".item__img");
 const productTitle = document.getElementById("title");
 const productPrice = document.getElementById("price");
 const productDescription = document.getElementById("description");
-const colorSelector = document.getElementById("colors");
-const quantitySelector = document.getElementById("quantity");
+const selectedColor = document.getElementById("colors");
+const selectedQuantity = document.getElementById("quantity");
 const addToCartButton = document.getElementById("addToCart");
 
-quantitySelector.value = "";
-
-// FETCH FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// FETCH FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 async function fetchApiProductData() {
-  await fetch(`http://localhost:3000/api/products/${productId}`)
+  await fetch(`http://localhost:3000/api/products/${selectedId}`)
     .then((res) => res.json())
     .then((data) => {
-      productData = data;
-      console.log("+++++ PRODUCT ID:");
-      console.log(productId);
-      console.log("+++++ PRODUCT DATA ARRAY:");
-      console.table(productData);
-    });
+      apiProductData = data;
+      console.log("+++++++++++++++ PAGE PRODUCT ID +++++++++++++++");
+      console.log(`+ Product id: ${selectedId}`);
+      console.log("+++++++++++++++ API PRODUCT DATA ARRAY +++++++++++++++");
+      console.table(apiProductData);
+    })
+    .catch((err) => console.log(err));
 }
 
-// DISPLAY FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// DISPLAY FUNCTIONS +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-(async function productDisplay() {
+(async function apiProductDisplay() {
   await fetchApiProductData();
 
-  elementDisplay();
-  productColorDisplay();
-  addToLocalStorage(productData);
+  displayCart();
+  displayColorOption();
+  addToCart(apiProductData);
 })();
 
-// DISPLAY FUNCTION / ELEMENT DISPLAY FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+function displayCart() {
+  const img = document.createElement("img");
+  img.src = apiProductData.imageUrl;
+  img.alt = apiProductData.altTxt;
+  productImg.appendChild(img);
 
-function elementDisplay() {
-  document.title = productData.name;
-  productImg.innerHTML = `<img src="${productData.imageUrl}" alt="${productData.altTxt}"></img>`;
-  productTitle.innerHTML = productData.name;
-  productPrice.innerHTML = productData.price;
-  productDescription.innerHTML = productData.description;
+  document.title = apiProductData.name;
+  productTitle.textContent = apiProductData.name;
+  productPrice.textContent = apiProductData.price;
+  productDescription.textContent = apiProductData.description;
 }
 
-// DISPLAY FUNCTION / PRODUCT COLOR DISPLAY FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-function productColorDisplay() {
-  productData.colors.forEach((productColors) => {
-    document.createElement("option");
+function displayColorOption() {
+  apiProductData.colors.forEach((productColors) => {
     let colorOption = document.createElement("option");
-
     colorOption.value = `${productColors}`;
     colorOption.innerHTML = `${productColors}`;
-
-    colorSelector.appendChild(colorOption);
+    selectedColor.appendChild(colorOption);
   });
 }
 
-// DISPLAY FUNCTION / ADD TO LOCALSTORAGE FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// CART FUNCTIONS ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-function addToLocalStorage() {
+function addToCart(apiProductData) {
   addToCartButton.addEventListener("click", () => {
-    let storage = JSON.parse(
-      localStorage.getItem(`${productData.name} ${colorSelector.value}`)
-    );
+    let myCart = JSON.parse(localStorage.getItem("kanap"));
 
-    const userCart = Object.assign({}, storage, {
-      color: `${colorSelector.value}`,
-      quantity: `${quantitySelector.value}`,
-      imageUrl: productData.imageUrl,
-      altTxt: productData.altTxt,
-      name: productData.name,
-      price: productData.price,
-      id: productId,
-    });
+    let selectedProduct = {
+      name: apiProductData.name,
+      color: selectedColor.value,
+      quantity: selectedQuantity.value,
+      _id: apiProductData._id,
+      imageUrl: apiProductData.imageUrl,
+      altTxt: apiProductData.altTxt,
+      price: apiProductData.price,
+    };
 
-    addToLocalStorageCondition(
-      colorSelector,
-      quantitySelector,
-      storage,
-      userCart
-    );
+    addToCartCondition(myCart, selectedProduct);
   });
-  return (storage = JSON.parse(
-    localStorage.getItem(`${productData.name} ${colorSelector.value}`)
-  ));
+  return (myCart = JSON.parse(localStorage.getItem("kanap")));
 }
 
-// ADD TO LOCALSTORAGE FUNCTION / ADD TO LOCALSTORAGE CONDITION FUNCTION +++++++++++++++++++++++++++++++++++++
+// CONDITION FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-function addToLocalStorageCondition(
-  colorSelector,
-  quantitySelector,
-  storage,
-  userCart
-) {
-  if (colorSelector.value == "" || quantitySelector.value == "") {
-    alertMessage();
+function addToCartCondition(myCart, selectedProduct) {
+  const noColor = selectedColor.value == "";
+  const noQuantity =
+    selectedQuantity.value == 0 || selectedQuantity.value == "";
+  const noColorAndQuantity =
+    selectedColor.value == "" &&
+    (selectedQuantity.value == 0 || selectedQuantity.value == "");
+
+  if (noColorAndQuantity) {
+    alertMissColorAndQuantity();
+  } else if (noColor) {
+    alertMissColor();
+  } else if (noQuantity) {
+    alertMissQuantity();
   } else {
-    if (storage == null) {
-      createLocalStorage(storage, userCart);
-    } else {
-      modifyLocalStorage(storage, userCart);
+    sendSelectedProductToMyCart(myCart, selectedProduct);
+  }
+}
+
+function sendSelectedProductToMyCart(myCart, selectedProduct) {
+  if (myCart == null) {
+    return createEntry(myCart, selectedProduct);
+  } else if (myCart) {
+    for (i = 0; i < myCart.length; i++) {
+      if (
+        myCart[i]._id == apiProductData._id &&
+        myCart[i].color == selectedColor.value
+      ) {
+        return modifyEntry(myCart, i, selectedProduct);
+      }
+    }
+    for (i = 0; i < myCart.length; i++) {
+      if (
+        (myCart[i]._id == apiProductData._id &&
+          myCart[i].color != selectedColor.value) ||
+        myCart[i]._id != apiProductData._id
+      ) {
+        return createAnotherEntry(myCart, selectedProduct);
+      }
     }
   }
 }
 
-// ADD TO LOCALSTORAGE FUNCTION / ALERT MESSAGE FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++
+// LOCALSTORAGE ENTRY ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-function alertMessage() {
-  alert(
-    "CHAMPS OBLIGATOIRES : \nVeuillez sélectionner une couleur et une quantité."
-  );
+function setItemToMyCart(myCart) {
+  localStorage.setItem("kanap", JSON.stringify(myCart));
+  myCart = JSON.parse(localStorage.getItem("kanap"));
 }
 
-// ADD TO LOCALSTORAGE FUNCTION / CREATE LOCALSTORAGE FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++
-
-function createLocalStorage(storage, userCart) {
-  storage = [];
-  storage.push(userCart);
-  localStorage.setItem(
-    `${productData.name} ${colorSelector.value}`,
-    JSON.stringify(storage)
-  );
-  console.log("+++++ LOCAL STORAGE ARRAY: NEW QUANTITY");
-  console.table(storage);
+function createEntry(myCart, selectedProduct) {
+  myCart = [];
+  myCart.push(selectedProduct);
+  setItemToMyCart(myCart);
+  console.log("+++++++++++++++ CREATE ENTRY +++++++++++++++");
+  console.table(myCart);
+  alertPopUp(selectedProduct);
 }
 
-// ADD TO LOCALSTORAGE FUNCTION / MODIFY LOCALSTORAGE FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++
+function modifyEntry(myCart, i, selectedProduct) {
+  myCart[i].quantity = selectedQuantity.value;
+  setItemToMyCart(myCart);
+  console.log("+++++++++++++++ MODIFY ENTRY +++++++++++++++");
+  console.table(myCart);
+  alertPopUp(selectedProduct);
+}
 
-function modifyLocalStorage(storage, userCart) {
-  let getProduct = storage.find(
-    (element) => element.id == userCart.id && element.color == userCart.color
-  );
-  getProduct.quantity = userCart.quantity;
-  localStorage.setItem(
-    `${productData.name} ${colorSelector.value}`,
-    JSON.stringify(storage)
-  );
-  console.log("+++++ LOCAL STORAGE ARRAY: NEW QUANTITY");
-  console.table(storage);
+function createAnotherEntry(myCart, selectedProduct) {
+  myCart.push(selectedProduct);
+  setItemToMyCart(myCart);
+  console.log("+++++++++++++++ CREATE AN OTHER ENTRY +++++++++++++++");
+  console.table(myCart);
+  alertPopUp(selectedProduct);
+}
+
+// ALERT MESSAGES FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function alertMissColorAndQuantity() {
+  alert("\n\nVeuillez sélectionner une couleur et une quantité.");
+}
+
+function alertMissColor() {
+  alert("\n\nVeuillez sélectionner une couleur.");
+}
+
+function alertMissQuantity() {
+  alert("\n\nVeuillez sélectionner une quantité.");
+}
+
+function alertPopUp(selectedProduct) {
+  alert(`${selectedProduct.name} a bien été ajouté au panier.
+  \nCouleur: ${selectedProduct.color}\nquantité: ${selectedProduct.quantity}
+  `);
 }

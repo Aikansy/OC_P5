@@ -1,244 +1,297 @@
-// VARIABLES ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// VARIABLES +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+// RETRIEVE PRODUCTS FROM LOCALSTORAGE
+let storage = JSON.parse(localStorage.getItem("kanap"));
 
 // SELECTION CONSTANTS
 let cart = document.querySelector(".cart");
-let cartArticle = document.querySelector("#cart__items");
+let cartItems = document.querySelector("#cart__items");
+let cartItem = document.querySelectorAll(".cart__item");
 let cartPrice = document.querySelector(".cart__price");
 let cartOrder = document.querySelector(".cart__order");
 
-// CHECK CART FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// CALCULATION VARIABLES
+let quantity = 0;
+let totalCartPrice = [];
+let totalCartQuantity = [];
 
-(function checkCart() {
-  if (localStorage.length === 0) {
-    const alertMessage = createAlertMessage();
+// DISPLAY FUNCTIONS +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    appendAlertMessage(alertMessage);
-    removeElementToSection(cart, cartPrice, cartOrder);
+(async function checkCart() {
+  if (storage == null) {
+    undisplayCart();
   } else {
-    console.table(localStorage);
+    displayCart();
   }
 })();
 
-function createAlertMessage() {
-  let emptyCartMessage = document.createElement("h3");
-  emptyCartMessage.style.textAlign = "center";
-  emptyCartMessage.style.marginBottom = "100px";
-  emptyCartMessage.textContent = "Aucun article n'a été ajouté au panier";
-  return emptyCartMessage;
+function undisplayCart() {
+  const emptyCartMessage = createEmptyCartMessage();
+  appendEmptyCartMessage(emptyCartMessage);
+  removeElement(cart, cartPrice, cartOrder);
 }
 
-function appendAlertMessage(alertMessage) {
-  cartArticle.appendChild(alertMessage);
+function displayCart() {
+  console.table(storage);
+
+  storage.forEach((product) => {
+    createCartItem(product);
+    createImgDiv();
+    createImage(product);
+    createContentDiv();
+    createDescriptionDiv();
+    createName(product);
+    createColor(product);
+    createPrice(product);
+    createSettingsDivs();
+    createQuantityDiv();
+    createQuantityTag();
+    createQuantityInput(product);
+    createDeleteDiv();
+    createDeleteButton();
+
+    appendElement(product);
+  });
+  cartFunctionality();
+  calculation();
 }
 
-function removeElementToSection(cart, cartPrice, cartOrder) {
-  cart.removeChild(cartPrice);
-  cart.removeChild(cartOrder);
+// ALL CREATE & REMOVE ELEMENT FUNCTIONS +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function createEmptyCartMessage() {
+  const message = document.createElement("h3");
+  message.style.textAlign = "center";
+  message.style.marginBottom = "100px";
+  message.textContent = "Aucun article n'a été ajouté au panier";
+  return message;
 }
 
-// AUTOMATIC FILLING FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-(async function automaticFilling() {
-  for (let i = 0; i <= localStorage.length; i++) {
-    if (localStorage.key(i)) {
-      let cartProduct = JSON.parse(localStorage.getItem(localStorage.key(i)));
-
-      let productId = cartProduct[0].id;
-      let productColor = cartProduct[0].color;
-      let productQuantity = cartProduct[0].quantity;
-      let productImage = cartProduct[0].imageUrl;
-      let productAltTxt = cartProduct[0].altTxt;
-      let productName = cartProduct[0].name;
-      let productPrice = cartProduct[0].price;
-
-      console.table(cartProduct);
-
-      cartDisplay(
-        productId,
-        productColor,
-        productQuantity,
-        productImage,
-        productAltTxt,
-        productName,
-        productPrice
-      );
-    }
-  }
-})();
-
-// CART DISPLAY FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-function cartDisplay(
-  productId,
-  productColor,
-  productQuantity,
-  productImage,
-  productAltTxt,
-  productName,
-  productPrice
-) {
-  const cartItem = createCartItem(productId, productColor);
-  const imgDiv = createImgDiv();
-  const img = createImage(productImage, productAltTxt);
-  const contentDiv = createContentDiv();
-  const descriptionDiv = createDescriptionDiv();
-  const title = createTitle(productName);
-  const color = createColor(productColor);
-  const price = createPrice(productPrice);
-  const settingsDiv = createSettingsDivs();
-  const quantityDiv = createQuantityDiv();
-  const quantity = createQuantity();
-  const quantityInput = createQuantityInput(productQuantity);
-  const deleteDiv = createDeleteDiv();
-  const deleteQuantity = createDeleteButton();
-
-  appendContentToSection(
-    cartItem,
-    imgDiv,
-    img,
-    contentDiv,
-    descriptionDiv,
-    title,
-    color,
-    price,
-    settingsDiv,
-    quantityDiv,
-    quantity,
-    quantityInput,
-    deleteDiv,
-    deleteQuantity
-  );
-}
-
-// CART DISPLAY FUNCTION / ELEMENT CREATION FUNCTIONS +++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-function createCartItem(productId, productColor) {
-  let cartItem = document.createElement("article");
+function createCartItem(product) {
+  const cartItem = document.createElement("article");
   cartItem.classList.add("cart__item");
-  cartItem.setAttribute("data-id", productId);
-  cartItem.setAttribute("data-color", productColor);
+  cartItem.setAttribute("data-id", product._id);
+  cartItem.setAttribute("data-color", product.color);
   return cartItem;
 }
 
 function createImgDiv() {
-  let imgDiv = document.createElement("div");
+  const imgDiv = document.createElement("div");
   imgDiv.classList.add("cart__item__img");
   return imgDiv;
 }
 
-function createImage(productImage, productAltTxt) {
-  let image = document.createElement("img");
-  image.src = productImage;
-  image.alt = productAltTxt;
+function createImage(product) {
+  const image = document.createElement("img");
+  image.src = product.imageUrl;
+  image.alt = product.altTxt;
   image.style.height = "100%";
   image.style.width = "130%";
   return image;
 }
 
 function createContentDiv() {
-  let contentDiv = document.createElement("div");
+  const contentDiv = document.createElement("div");
   contentDiv.classList.add("cart__item__content");
   return contentDiv;
 }
 
 function createDescriptionDiv() {
-  let descriptionDiv = document.createElement("div");
+  const descriptionDiv = document.createElement("div");
   descriptionDiv.classList.add("cart__item__content__description");
   return descriptionDiv;
 }
 
-function createTitle(productName) {
-  let title = document.createElement("h2");
-  title.textContent = productName;
-  return title;
+function createName(product) {
+  const name = document.createElement("h2");
+  name.textContent = product.name;
+  return name;
 }
 
-function createColor(productColor) {
-  let color = document.createElement("p");
-  color.textContent = productColor;
+function createColor(product) {
+  const color = document.createElement("p");
+  color.textContent = product.color;
   return color;
 }
 
-function createPrice(productPrice) {
-  let price = document.createElement("p");
-  price.textContent = productPrice;
+function createPrice(product) {
+  const price = document.createElement("p");
+  price.textContent = `${product.price} €`;
   return price;
 }
 
 function createSettingsDivs() {
-  let settingsDiv = document.createElement("div");
+  const settingsDiv = document.createElement("div");
   settingsDiv.classList.add("cart__item__content__settings");
   return settingsDiv;
 }
 
 function createQuantityDiv() {
-  let quantityDiv = document.createElement("div");
+  const quantityDiv = document.createElement("div");
   quantityDiv.classList.add("cart__item__content__settings__quantity");
   return quantityDiv;
 }
 
-function createQuantity() {
-  let quantity = document.createElement("p");
-  quantity.textContent = "Qté : ";
-  return quantity;
+function createQuantityTag() {
+  const quantityTag = document.createElement("p");
+  quantityTag.textContent = "Qté : ";
+  return quantityTag;
 }
 
-function createQuantityInput(productQuantity) {
-  let input = document.createElement("input");
-  input.setAttribute("type", "number");
-  input.classList.add("itemQuantity");
-  input.setAttribute("name", "itemQuantity");
-  input.setAttribute("min", "1");
-  input.setAttribute("max", "100");
-  input.setAttribute("value", productQuantity);
-  return input;
+function createQuantityInput(product) {
+  const quantityInput = document.createElement("input");
+  quantityInput.setAttribute("type", "number");
+  quantityInput.classList.add("itemQuantity");
+  quantityInput.setAttribute("name", "itemQuantity");
+  quantityInput.setAttribute("min", "1");
+  quantityInput.setAttribute("max", "100");
+  quantityInput.setAttribute("value", product.quantity);
+  return quantityInput;
 }
 
 function createDeleteDiv() {
-  let deleteDiv = document.createElement("div");
+  const deleteDiv = document.createElement("div");
   deleteDiv.classList.add("cart__item__content__settings__delete");
   return deleteDiv;
 }
 
 function createDeleteButton() {
-  let deleteBtn = document.createElement("p");
-  deleteBtn.classList.add("deleteItem");
-  deleteBtn.textContent = "Supprimer";
-  return deleteBtn;
+  const deleteButton = document.createElement("p");
+  deleteButton.classList.add("deleteItem");
+  deleteButton.textContent = "Supprimer";
+  return deleteButton;
 }
 
-// CARD DISPLAY FUNCTION / APPENDCHILD CONTENT FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++
+function removeElement(cart, cartPrice, cartOrder) {
+  cart.removeChild(cartPrice);
+  cart.removeChild(cartOrder);
+}
 
-function appendContentToSection(
-  cartItem,
-  imgDiv,
-  img,
-  contentDiv,
-  descriptionDiv,
-  title,
-  color,
-  price,
-  settingsDiv,
-  quantityDiv,
-  quantity,
-  quantityInput,
-  deleteDiv,
-  deleteQuantity
-) {
-  let cartArticle = document.querySelector("#cart__items");
+// ALL APPEND FUNCTIONS ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  cartArticle.appendChild(cartItem);
-  cartItem.appendChild(imgDiv);
-  imgDiv.appendChild(img);
-  cartItem.appendChild(contentDiv);
-  contentDiv.appendChild(descriptionDiv);
-  descriptionDiv.appendChild(title);
-  descriptionDiv.appendChild(color);
-  descriptionDiv.appendChild(price);
-  contentDiv.appendChild(settingsDiv);
-  settingsDiv.appendChild(quantityDiv);
-  quantityDiv.appendChild(quantity);
-  quantityDiv.appendChild(quantityInput);
-  settingsDiv.appendChild(deleteDiv);
-  deleteDiv.appendChild(deleteQuantity);
+function appendEmptyCartMessage(emptyCartMessage) {
+  cartItems.appendChild(emptyCartMessage);
+}
+
+function appendElement(product) {
+  const elementCartItem = createCartItem(product);
+  const elementImgDiv = createImgDiv();
+  const elementImg = createImage(product);
+  const elementContentDiv = createContentDiv();
+  const elementDescriptionDiv = createDescriptionDiv();
+  const elementName = createName(product);
+  const elementColor = createColor(product);
+  const elementPrice = createPrice(product);
+  const elementSettingsDiv = createSettingsDivs();
+  const elementQuantityDiv = createQuantityDiv();
+  const elementQuantity = createQuantityTag();
+  const elementQuantityInput = createQuantityInput(product);
+  const elementDeleteDiv = createDeleteDiv();
+  const elementDeleteQuantity = createDeleteButton();
+
+  cartItems.appendChild(elementCartItem);
+  elementCartItem.appendChild(elementImgDiv);
+  elementImgDiv.appendChild(elementImg);
+  elementCartItem.appendChild(elementContentDiv);
+  elementContentDiv.appendChild(elementDescriptionDiv);
+  elementDescriptionDiv.appendChild(elementName);
+  elementDescriptionDiv.appendChild(elementColor);
+  elementDescriptionDiv.appendChild(elementPrice);
+  elementContentDiv.appendChild(elementSettingsDiv);
+  elementSettingsDiv.appendChild(elementQuantityDiv);
+  elementQuantityDiv.appendChild(elementQuantity);
+  elementQuantityDiv.appendChild(elementQuantityInput);
+  elementSettingsDiv.appendChild(elementDeleteDiv);
+  elementDeleteDiv.appendChild(elementDeleteQuantity);
+}
+
+// DELETE FUNCTIONALITY ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function cartFunctionality() {
+  let cardContainer = document.querySelector("#cart__items");
+  let productCard = document.querySelectorAll(".cart__item");
+  let allDeleteButton = document.querySelectorAll(".deleteItem");
+  let AllQuantityInput = document.querySelectorAll(".itemQuantity");
+
+  quantityModifier(productCard, AllQuantityInput);
+  deleteProduct(cardContainer, productCard, allDeleteButton);
+}
+
+function deleteProduct(cardContainer, productCard, allDeleteButton) {
+  for (let i = 0; i < productCard.length; i++) {
+    let deleteButton = allDeleteButton[i];
+
+    deleteButton.addEventListener("click", () => {
+      if (storage.length == 1) {
+        return (
+          cardContainer.removeChild(productCard[i]),
+          localStorage.removeItem("kanap"),
+          undisplayCart()
+        );
+      } else {
+        remainingProduct = storage.filter((element) => {
+          if (
+            productCard[i].dataset.id != element._id ||
+            productCard[i].dataset.color != element.color
+          ) {
+            return true;
+          }
+        });
+        console.table(remainingProduct);
+        storage = remainingProduct;
+        cardContainer.removeChild(productCard[i]);
+        localStorage.setItem("kanap", JSON.stringify(storage));
+        storage = JSON.parse(localStorage.getItem("kanap"));
+        calculation();
+      }
+    });
+  }
+  return;
+}
+
+function quantityModifier(productCard, AllQuantityInput) {
+  for (let i = 0; i < storage.length; i++) {
+    let quantityInput = AllQuantityInput[i];
+
+    quantityInput.addEventListener("change", () => {
+      if (
+        storage[i]._id == productCard[i].dataset.id &&
+        storage[i].color == productCard[i].dataset.color
+      ) {
+        return (
+          (storage[i].quantity = quantityInput.value),
+          localStorage.setItem("kanap", JSON.stringify(storage)),
+          ((storage = JSON.parse(localStorage.getItem("kanap"))),
+          console.table(storage[i]),
+          calculation())
+        );
+      }
+    });
+  }
+  return;
+}
+
+function calculation() {
+  let totaltPriceArray = [];
+  let totalQuantityArray = [];
+  let totalQuantity = document.querySelector("#totalQuantity");
+  let totalPrice = document.querySelector("#totalPrice");
+
+  for (let i = 0; i < storage.length; i++) {
+    let totalPerProduct = storage[i].price * storage[i].quantity;
+    let totalQuantityPerProduct = storage[i].quantity;
+    let stringToNumber = parseInt(totalQuantityPerProduct);
+    const reducer = (accumulator, currentValue) => accumulator + currentValue;
+
+    totaltPriceArray.push(totalPerProduct);
+    totalQuantityArray.push(stringToNumber);
+
+    totalCartPrice = totaltPriceArray.reduce(reducer);
+    totalCartQuantity = totalQuantityArray.reduce(reducer);
+
+    console.log(totalCartPrice);
+    console.log(totalCartQuantity);
+
+    totalQuantity.textContent = totalCartQuantity;
+    totalPrice.textContent = totalCartPrice;
+  }
 }

@@ -1,22 +1,30 @@
-// VARIABLES ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// VARIABLES +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+// STORAGE VARIABLE
+let apiProductData = [];
 
 // SELECTION CONSTANTS
 const items = document.querySelector("#items");
 
-// FETCH FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// FETCH FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-const fetchProductData = (async () => {
+async function fetchApiProductData() {
   await fetch(`http://localhost:3000/api/products`)
-    .then((response) => response.json())
-    .then((data) => productsDisplay(data));
-})();
+    .then((res) => res.json())
+    .then((data) => {
+      apiProductData = data;
+      console.log("+++++++++++++++ API PRODUCT DATA ARRAY +++++++++++++++");
+      console.table(apiProductData);
+    })
+    .catch((err) => console.log(err));
+}
 
-// PRODUCT DISPLAY FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// PRODUCT DISPLAY FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-function productsDisplay(data) {
-  console.table(data);
+(async function apiProductsDisplay() {
+  await fetchApiProductData();
 
-  data.forEach((product) => {
+  apiProductData.forEach((product) => {
     const { _id, name, imageUrl, description, altTxt } = product;
 
     const article = document.createElement("article");
@@ -27,13 +35,13 @@ function productsDisplay(data) {
 
     appendChildElement(link, article, img, title, desc);
   });
-}
+})();
 
-// PRODUCT DISPLAY FUNCTION / CREATE ELEMENT FUNCTION
+// ALL CREATE & REMOVE ELEMENT FUNCTIONS +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-function createLink(id) {
+function createLink(_id) {
   const productLink = document.createElement("a");
-  productLink.href = "./product.html?id=" + id;
+  productLink.href = "./product.html?id=" + _id;
   return productLink;
 }
 
@@ -58,7 +66,7 @@ function createDescription(description) {
   return productDesc;
 }
 
-// PRODUCT DISPLAY FUNCTION / APPENDCHILD ELEMENT FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++
+// ALL APPEND FUNCTIONS ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 function appendChildElement(link, article, img, title, desc) {
   items.appendChild(link);
