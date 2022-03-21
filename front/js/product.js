@@ -1,4 +1,4 @@
-// VARIABLES +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ********************************************************************************************* VARIABLE(S)
 
 // STORAGE VARIABLE
 let apiProductData = [];
@@ -11,11 +11,11 @@ const productImg = document.querySelector(".item__img");
 const productTitle = document.getElementById("title");
 const productPrice = document.getElementById("price");
 const productDescription = document.getElementById("description");
-const selectedColor = document.getElementById("colors");
+const productColor = document.getElementById("colors");
 const selectedQuantity = document.getElementById("quantity");
 const addToCartButton = document.getElementById("addToCart");
 
-// FETCH FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ****************************************************************************************** FETCH FUNCTION
 
 async function fetchApiProductData() {
   await fetch(`http://localhost:3000/api/products/${selectedId}`)
@@ -30,140 +30,143 @@ async function fetchApiProductData() {
     .catch((err) => console.log(err));
 }
 
-// DISPLAY FUNCTIONS +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ******************************************************************************************* CORE FUNCTION
 
-(async function apiProductDisplay() {
+(async function coreFunction() {
   await fetchApiProductData();
 
   displayCart();
-  displayColorOption();
-  addToCart(apiProductData);
+  addCartFeature();
 })();
 
-function displayCart() {
-  const img = document.createElement("img");
-  img.src = apiProductData.imageUrl;
-  img.alt = apiProductData.altTxt;
-  productImg.appendChild(img);
+// ************************************************************************* DISPLAY / UNDISPLAY FUNCTION(S)
 
+function displayCart() {
   document.title = apiProductData.name;
   productTitle.textContent = apiProductData.name;
   productPrice.textContent = apiProductData.price;
   productDescription.textContent = apiProductData.description;
-}
 
-function displayColorOption() {
-  apiProductData.colors.forEach((productColors) => {
-    let colorOption = document.createElement("option");
-    colorOption.value = `${productColors}`;
-    colorOption.innerHTML = `${productColors}`;
-    selectedColor.appendChild(colorOption);
+  const image = createImage(apiProductData);
+  appendImage(image);
+
+  apiProductData.colors.forEach((color) => {
+    const colorOption = createOption(color);
+    appendColorOption(colorOption);
   });
 }
 
-// CART FUNCTIONS ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ********************************************************************  CREATE / REMOVE ELEMENT FUNCTION(S)
 
-function addToCart(apiProductData) {
+function createImage(apiProductData) {
+  const image = document.createElement("img");
+  image.src = apiProductData.imageUrl;
+  image.alt = apiProductData.altTxt;
+  return image;
+}
+
+function createOption(color) {
+  const option = document.createElement("option");
+  option.value = `${color}`;
+  option.innerHTML = `${color}`;
+  return option;
+}
+
+// ************************************************************************************** APPEND FUNCTION(S)
+
+function appendImage(image) {
+  productImg.appendChild(image);
+}
+
+function appendColorOption(colorOption) {
+  productColor.appendChild(colorOption);
+}
+
+// ************************************************************************************* FEATURES FUNCTION(S)
+
+function addCartFeature() {
   addToCartButton.addEventListener("click", () => {
-    let myCart = JSON.parse(localStorage.getItem("kanap"));
+    const storage = JSON.parse(localStorage.getItem("products"));
+    validColor = false;
+    validQuantity = false;
 
-    let selectedProduct = {
-      name: apiProductData.name,
-      color: selectedColor.value,
-      quantity: selectedQuantity.value,
+    const selectedProduct = {
       _id: apiProductData._id,
-      imageUrl: apiProductData.imageUrl,
-      altTxt: apiProductData.altTxt,
-      price: apiProductData.price,
+      color: productColor.value,
+      quantity: selectedQuantity.value,
     };
 
-    addToCartCondition(myCart, selectedProduct);
+    colorValidity(selectedProduct);
+    quantityValidity(selectedProduct);
+
+    if (validColor && validQuantity) {
+      if (storage == null) {
+        return createEntry(storage, selectedProduct);
+      } else if (storage) {
+        for (i = 0; i < storage.length; i++) {
+          if (
+            storage[i]._id == apiProductData._id &&
+            storage[i].color == selectedProduct.color
+          ) {
+            return modifyEntry(storage, i, selectedProduct);
+          }
+        }
+        for (i = 0; i < storage.length; i++) {
+          if (
+            (storage[i]._id == apiProductData._id &&
+              storage[i].color != selectedProduct.color) ||
+            storage[i]._id != apiProductData._id
+          ) {
+            return createAnotherEntry(storage, selectedProduct);
+          }
+        }
+      }
+    }
   });
-  return (myCart = JSON.parse(localStorage.getItem("kanap")));
 }
 
-// CONDITION FUNCTION ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ************************************************************************************* VALIDITY FUNCTION(S)
 
-function addToCartCondition(myCart, selectedProduct) {
-  const noColor = selectedColor.value == "";
-  const noQuantity =
-    selectedQuantity.value == 0 || selectedQuantity.value == "";
-  const noColorAndQuantity =
-    selectedColor.value == "" &&
-    (selectedQuantity.value == 0 || selectedQuantity.value == "");
-
-  if (noColorAndQuantity) {
-    alertMissColorAndQuantity();
-  } else if (noColor) {
+function colorValidity(selectedProduct) {
+  if (selectedProduct.color == "") {
+    validColor = false;
     alertMissColor();
-  } else if (noQuantity) {
+  } else {
+    validColor = true;
+  }
+}
+
+function quantityValidity(selectedProduct) {
+  if (selectedProduct.quantity == 0 || selectedProduct.quantity == "") {
+    validQuantity = false;
     alertMissQuantity();
   } else {
-    sendSelectedProductToMyCart(myCart, selectedProduct);
+    validQuantity = true;
   }
 }
 
-function sendSelectedProductToMyCart(myCart, selectedProduct) {
-  if (myCart == null) {
-    return createEntry(myCart, selectedProduct);
-  } else if (myCart) {
-    for (i = 0; i < myCart.length; i++) {
-      if (
-        myCart[i]._id == apiProductData._id &&
-        myCart[i].color == selectedColor.value
-      ) {
-        return modifyEntry(myCart, i, selectedProduct);
-      }
-    }
-    for (i = 0; i < myCart.length; i++) {
-      if (
-        (myCart[i]._id == apiProductData._id &&
-          myCart[i].color != selectedColor.value) ||
-        myCart[i]._id != apiProductData._id
-      ) {
-        return createAnotherEntry(myCart, selectedProduct);
-      }
-    }
-  }
-}
+// ************************************************************************************** STORAGE FUNCTION(S)
 
-// LOCALSTORAGE ENTRY ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-function setItemToMyCart(myCart) {
-  localStorage.setItem("kanap", JSON.stringify(myCart));
-  myCart = JSON.parse(localStorage.getItem("kanap"));
-}
-
-function createEntry(myCart, selectedProduct) {
-  myCart = [];
-  myCart.push(selectedProduct);
-  setItemToMyCart(myCart);
-  console.log("+++++++++++++++ CREATE ENTRY +++++++++++++++");
-  console.table(myCart);
+function createEntry(storage, selectedProduct) {
+  storage = [];
+  storage.push(selectedProduct);
+  localStorage.setItem("products", JSON.stringify(storage));
   alertPopUp(selectedProduct);
 }
 
-function modifyEntry(myCart, i, selectedProduct) {
-  myCart[i].quantity = selectedQuantity.value;
-  setItemToMyCart(myCart);
-  console.log("+++++++++++++++ MODIFY ENTRY +++++++++++++++");
-  console.table(myCart);
+function modifyEntry(storage, i, selectedProduct) {
+  storage[i].quantity = selectedQuantity.value;
+  localStorage.setItem("products", JSON.stringify(storage));
   alertPopUp(selectedProduct);
 }
 
-function createAnotherEntry(myCart, selectedProduct) {
-  myCart.push(selectedProduct);
-  setItemToMyCart(myCart);
-  console.log("+++++++++++++++ CREATE AN OTHER ENTRY +++++++++++++++");
-  console.table(myCart);
+function createAnotherEntry(storage, selectedProduct) {
+  storage.push(selectedProduct);
+  localStorage.setItem("products", JSON.stringify(storage));
   alertPopUp(selectedProduct);
 }
 
-// ALERT MESSAGES FUNCTION +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-function alertMissColorAndQuantity() {
-  alert("\n\nVeuillez sélectionner une couleur et une quantité.");
-}
+// *********************************************************************** ALERT / ERROR MESSAGES FUNCTION(S)
 
 function alertMissColor() {
   alert("\n\nVeuillez sélectionner une couleur.");
@@ -174,7 +177,7 @@ function alertMissQuantity() {
 }
 
 function alertPopUp(selectedProduct) {
-  alert(`${selectedProduct.name} a bien été ajouté au panier.
-  \nCouleur: ${selectedProduct.color}\nquantité: ${selectedProduct.quantity}
+  alert(`Le produit suivant a bien été ajouté au panier.
+  \n${selectedProduct.name}\nCouleur: ${selectedProduct.color}\nquantité: ${selectedProduct.quantity}
   `);
 }

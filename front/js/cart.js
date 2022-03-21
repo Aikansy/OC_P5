@@ -1,62 +1,76 @@
-// VARIABLES +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ********************************************************************************************* VARIABLE(S)
 
 // RETRIEVE PRODUCTS FROM LOCALSTORAGE
-let storage = JSON.parse(localStorage.getItem("kanap"));
+const storage = JSON.parse(localStorage.getItem("products"));
 
 // SELECTION CONSTANTS
-let cart = document.querySelector(".cart");
-let cartItems = document.querySelector("#cart__items");
-let cartItem = document.querySelectorAll(".cart__item");
-let cartPrice = document.querySelector(".cart__price");
-let cartOrder = document.querySelector(".cart__order");
+const cart = document.getElementsByClassName("cart");
+const cartItems = document.getElementById("cart__items");
+const cartPrice = document.getElementsByClassName(".cart__price");
+const cartOrder = document.getElementsByClassName("cart__order");
+const orderButton = document.getElementById("order");
 
-// CALCULATION VARIABLES
-let quantity = 0;
-let totalCartPrice = [];
-let totalCartQuantity = [];
+// ******************************************************************************************* CORE FUNCTION
 
-// DISPLAY FUNCTIONS +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-(async function checkCart() {
+(async function coreFunction() {
   if (storage == null) {
-    undisplayCart();
+    emptyCartDisplay();
+    emptyOrderFeature();
   } else {
-    displayCart();
+    for (let product of storage) {
+      const res = await fetch(
+        `http://localhost:3000/api/products/${product._id}`
+      );
+      let response = await res.json();
+
+      const cartItem = createCartItem(product);
+      const imageDiv = createImgDiv();
+      const image = createImage(response);
+      const contentDiv = createContentDiv();
+      const descriptionDiv = createDescriptionDiv();
+      const name = createName(response);
+      const color = createColor(product);
+      const price = createPrice(response);
+      const settingsDiv = createSettingsDivs();
+      const quantityDiv = createQuantityDiv();
+      const quantity = createQuantityTag();
+      const quantityInput = createQuantityInput(product);
+      const deleteDiv = createDeleteDiv();
+      const deleteButton = createDeleteButton();
+
+      appendElement(
+        cartItem,
+        imageDiv,
+        image,
+        contentDiv,
+        descriptionDiv,
+        name,
+        color,
+        price,
+        settingsDiv,
+        quantityDiv,
+        quantity,
+        quantityInput,
+        deleteDiv,
+        deleteButton
+      );
+
+      deleteFeature(response, deleteButton, cartItem, product);
+      quantityFeature(quantityInput, product);
+      await totalFeature();
+    }
+    orderFeature();
   }
 })();
 
-function undisplayCart() {
+// ************************************************************************* DISPLAY / UNDISPLAY FUNCTION(S)
+
+function emptyCartDisplay() {
   const emptyCartMessage = createEmptyCartMessage();
   appendEmptyCartMessage(emptyCartMessage);
-  removeElement(cart, cartPrice, cartOrder);
 }
 
-function displayCart() {
-  console.table(storage);
-
-  storage.forEach((product) => {
-    createCartItem(product);
-    createImgDiv();
-    createImage(product);
-    createContentDiv();
-    createDescriptionDiv();
-    createName(product);
-    createColor(product);
-    createPrice(product);
-    createSettingsDivs();
-    createQuantityDiv();
-    createQuantityTag();
-    createQuantityInput(product);
-    createDeleteDiv();
-    createDeleteButton();
-
-    appendElement(product);
-  });
-  cartFunctionality();
-  calculation();
-}
-
-// ALL CREATE & REMOVE ELEMENT FUNCTIONS +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ********************************************************************  CREATE / REMOVE ELEMENT FUNCTION(S)
 
 function createEmptyCartMessage() {
   const message = document.createElement("h3");
@@ -67,11 +81,11 @@ function createEmptyCartMessage() {
 }
 
 function createCartItem(product) {
-  const cartItem = document.createElement("article");
-  cartItem.classList.add("cart__item");
-  cartItem.setAttribute("data-id", product._id);
-  cartItem.setAttribute("data-color", product.color);
-  return cartItem;
+  const item = document.createElement("article");
+  item.classList.add("cart__item");
+  item.setAttribute("data-id", product._id);
+  item.setAttribute("data-color", product.color);
+  return item;
 }
 
 function createImgDiv() {
@@ -80,10 +94,10 @@ function createImgDiv() {
   return imgDiv;
 }
 
-function createImage(product) {
+function createImage(response) {
   const image = document.createElement("img");
-  image.src = product.imageUrl;
-  image.alt = product.altTxt;
+  image.src = response.imageUrl;
+  image.alt = response.altTxt;
   image.style.height = "100%";
   image.style.width = "130%";
   return image;
@@ -101,9 +115,9 @@ function createDescriptionDiv() {
   return descriptionDiv;
 }
 
-function createName(product) {
+function createName(response) {
   const name = document.createElement("h2");
-  name.textContent = product.name;
+  name.textContent = response.name;
   return name;
 }
 
@@ -113,9 +127,9 @@ function createColor(product) {
   return color;
 }
 
-function createPrice(product) {
+function createPrice(response) {
   const price = document.createElement("p");
-  price.textContent = `${product.price} €`;
+  price.textContent = `${response.price} €`;
   return price;
 }
 
@@ -161,137 +175,218 @@ function createDeleteButton() {
   return deleteButton;
 }
 
-function removeElement(cart, cartPrice, cartOrder) {
-  cart.removeChild(cartPrice);
-  cart.removeChild(cartOrder);
-}
-
-// ALL APPEND FUNCTIONS ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ************************************************************************************** APPEND FUNCTION(S)
 
 function appendEmptyCartMessage(emptyCartMessage) {
   cartItems.appendChild(emptyCartMessage);
 }
 
-function appendElement(product) {
-  const elementCartItem = createCartItem(product);
-  const elementImgDiv = createImgDiv();
-  const elementImg = createImage(product);
-  const elementContentDiv = createContentDiv();
-  const elementDescriptionDiv = createDescriptionDiv();
-  const elementName = createName(product);
-  const elementColor = createColor(product);
-  const elementPrice = createPrice(product);
-  const elementSettingsDiv = createSettingsDivs();
-  const elementQuantityDiv = createQuantityDiv();
-  const elementQuantity = createQuantityTag();
-  const elementQuantityInput = createQuantityInput(product);
-  const elementDeleteDiv = createDeleteDiv();
-  const elementDeleteQuantity = createDeleteButton();
-
-  cartItems.appendChild(elementCartItem);
-  elementCartItem.appendChild(elementImgDiv);
-  elementImgDiv.appendChild(elementImg);
-  elementCartItem.appendChild(elementContentDiv);
-  elementContentDiv.appendChild(elementDescriptionDiv);
-  elementDescriptionDiv.appendChild(elementName);
-  elementDescriptionDiv.appendChild(elementColor);
-  elementDescriptionDiv.appendChild(elementPrice);
-  elementContentDiv.appendChild(elementSettingsDiv);
-  elementSettingsDiv.appendChild(elementQuantityDiv);
-  elementQuantityDiv.appendChild(elementQuantity);
-  elementQuantityDiv.appendChild(elementQuantityInput);
-  elementSettingsDiv.appendChild(elementDeleteDiv);
-  elementDeleteDiv.appendChild(elementDeleteQuantity);
+function appendElement(
+  cartItem,
+  imageDiv,
+  image,
+  contentDiv,
+  descriptionDiv,
+  name,
+  color,
+  price,
+  settingsDiv,
+  quantityDiv,
+  quantity,
+  quantityInput,
+  deleteDiv,
+  deleteButton
+) {
+  cartItems.appendChild(cartItem);
+  cartItem.appendChild(imageDiv);
+  imageDiv.appendChild(image);
+  cartItem.appendChild(contentDiv);
+  contentDiv.appendChild(descriptionDiv);
+  descriptionDiv.appendChild(name);
+  descriptionDiv.appendChild(color);
+  descriptionDiv.appendChild(price);
+  contentDiv.appendChild(settingsDiv);
+  settingsDiv.appendChild(quantityDiv);
+  quantityDiv.appendChild(quantity);
+  quantityDiv.appendChild(quantityInput);
+  settingsDiv.appendChild(deleteDiv);
+  deleteDiv.appendChild(deleteButton);
 }
 
-// DELETE FUNCTIONALITY ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ************************************************************************************* FEATURES FUNCTION(S)
 
-function cartFunctionality() {
-  let cardContainer = document.querySelector("#cart__items");
-  let productCard = document.querySelectorAll(".cart__item");
-  let allDeleteButton = document.querySelectorAll(".deleteItem");
-  let AllQuantityInput = document.querySelectorAll(".itemQuantity");
-
-  quantityModifier(productCard, AllQuantityInput);
-  deleteProduct(cardContainer, productCard, allDeleteButton);
+async function fetchData(id) {
+  let url = `http://localhost:3000/api/products/${id}`;
+  try {
+    let res = await fetch(url);
+    return await res.json();
+  } catch (error) {
+    console.log(error);
+  }
 }
 
-function deleteProduct(cardContainer, productCard, allDeleteButton) {
-  for (let i = 0; i < productCard.length; i++) {
-    let deleteButton = allDeleteButton[i];
+async function emptyOrderFeature() {
+  orderButton.addEventListener("click", (e) => {
+    e.preventDefault();
 
-    deleteButton.addEventListener("click", () => {
+    if (storage == null) {
+      alert(
+        "\n\nCommande invalide.\n\nVeuillez vérifier que vous ayez sélectionner au moins un produit avant de passer commande."
+      );
+    }
+  });
+}
+
+function quantityFeature(quantityInput, product) {
+  quantityInput.addEventListener("change", async () => {
+    const storage = JSON.parse(localStorage.getItem("products"));
+    const modifyProduct = storage.find(
+      (element) => element._id == product._id && element.color == product.color
+    );
+    modifyProduct.quantity = Number(quantityInput.value);
+    localStorage.setItem("products", JSON.stringify(storage));
+    await totalFeature();
+  });
+}
+
+function deleteFeature(response, deleteButton, cartItem, product) {
+  deleteButton.addEventListener("click", async () => {
+    const storage = JSON.parse(localStorage.getItem("products"));
+
+    if (confirm(`Supprimer ${response.name} de votre panier ?`)) {
       if (storage.length == 1) {
         return (
-          cardContainer.removeChild(productCard[i]),
-          localStorage.removeItem("kanap"),
+          cartItems.removeChild(cartItem),
+          localStorage.removeItem("products"),
           undisplayCart()
         );
       } else {
-        remainingProduct = storage.filter((element) => {
-          if (
-            productCard[i].dataset.id != element._id ||
-            productCard[i].dataset.color != element.color
-          ) {
+        remainingProducts = storage.filter((element) => {
+          if (element._id != product._id || element.color != product.color) {
             return true;
           }
         });
-        console.table(remainingProduct);
-        storage = remainingProduct;
-        cardContainer.removeChild(productCard[i]);
-        localStorage.setItem("kanap", JSON.stringify(storage));
-        storage = JSON.parse(localStorage.getItem("kanap"));
-        calculation();
+        localStorage.setItem("products", JSON.stringify(remainingProducts));
+        cartItems.removeChild(cartItem);
+        await totalFeature();
       }
-    });
-  }
-  return;
+    }
+  });
 }
 
-function quantityModifier(productCard, AllQuantityInput) {
-  for (let i = 0; i < storage.length; i++) {
-    let quantityInput = AllQuantityInput[i];
+async function totalFeature() {
+  const storage = JSON.parse(localStorage.getItem("products"));
 
-    quantityInput.addEventListener("change", () => {
-      if (
-        storage[i]._id == productCard[i].dataset.id &&
-        storage[i].color == productCard[i].dataset.color
-      ) {
-        return (
-          (storage[i].quantity = quantityInput.value),
-          localStorage.setItem("kanap", JSON.stringify(storage)),
-          ((storage = JSON.parse(localStorage.getItem("kanap"))),
-          console.table(storage[i]),
-          calculation())
-        );
-      }
-    });
+  let quantity = 0;
+  let total = 0;
+
+  for (let product of storage) {
+    let data = await fetchData(product._id);
+    quantity += Number(product.quantity);
+    total += Number(product.quantity) * Number(data.price);
   }
-  return;
+
+  document.getElementById("totalPrice").textContent = total;
+  document.getElementById("totalQuantity").textContent = quantity;
 }
 
-function calculation() {
-  let totaltPriceArray = [];
-  let totalQuantityArray = [];
-  let totalQuantity = document.querySelector("#totalQuantity");
-  let totalPrice = document.querySelector("#totalPrice");
+async function orderFeature() {
+  orderButton.addEventListener("click", (e) => {
+    e.preventDefault();
 
-  for (let i = 0; i < storage.length; i++) {
-    let totalPerProduct = storage[i].price * storage[i].quantity;
-    let totalQuantityPerProduct = storage[i].quantity;
-    let stringToNumber = parseInt(totalQuantityPerProduct);
-    const reducer = (accumulator, currentValue) => accumulator + currentValue;
+    if (regexValidity() === true && storage != null) {
+      const storage = JSON.parse(localStorage.getItem("products"));
+      let productIds = [];
 
-    totaltPriceArray.push(totalPerProduct);
-    totalQuantityArray.push(stringToNumber);
+      for (let product of storage) productIds.push(product._id);
+      const request = {
+        contact: {
+          firstName: document.getElementById("firstName").value,
+          lastName: document.getElementById("lastName").value,
+          address: document.getElementById("address").value,
+          city: document.getElementById("city").value,
+          email: document.getElementById("email").value,
+        },
+        products: productIds,
+      };
+      const options = {
+        method: "POST",
+        body: JSON.stringify(request),
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      };
 
-    totalCartPrice = totaltPriceArray.reduce(reducer);
-    totalCartQuantity = totalQuantityArray.reduce(reducer);
+      fetch("http://localhost:3000/api/products/order", options)
+        .then((response) => response.json())
+        .then((data) => {
+          document.location.href = "confirmation.html?" + data.orderId;
+        })
+        .catch((err) => console.log(err));
+    }
+  });
+}
 
-    console.log(totalCartPrice);
-    console.log(totalCartQuantity);
+// **************************************************************************************** REGEX FUNCTION(S)
 
-    totalQuantity.textContent = totalCartQuantity;
-    totalPrice.textContent = totalCartPrice;
+function regexValidity() {
+  const firstName = document.getElementById("firstName").value;
+  const lastName = document.getElementById("lastName").value;
+  const address = document.getElementById("address").value;
+  const city = document.getElementById("city").value;
+  const email = document.getElementById("email").value;
+
+  let validRegex = false;
+
+  if (/^[A-Za-z-']{2,20}$/.test(firstName)) {
+    firstNameErrorMsg.textContent = "";
+    validRegex = true;
+  } else {
+    const firstNameErrorMsg = document.getElementById("firstNameErrorMsg");
+    firstNameErrorMsg.textContent = `Champ invalide.`;
+    firstNameErrorMsg.style.color = "red";
+    validRegex = false;
   }
+
+  if (/^[A-Za-z-']{2,20}$/.test(lastName)) {
+    validRegex = true;
+    lastNameErrorMsg.textContent = "";
+  } else {
+    const lastNameErrorMsg = document.getElementById("lastNameErrorMsg");
+    lastNameErrorMsg.textContent = `Champ invalide.`;
+    lastNameErrorMsg.style.color = "red";
+    validRegex = false;
+  }
+
+  if (/^[A-Za-z0-9-,'/#)(]{5,100}/.test(address)) {
+    addressErrorMsg.textContent = "";
+    validRegex = true;
+  } else {
+    const addressErrorMsg = document.getElementById("addressErrorMsg");
+    addressErrorMsg.textContent = `Champ invalide.`;
+    addressErrorMsg.style.color = "red";
+    validRegex = false;
+  }
+
+  if (/^[A-Za-z-'/]{2,20}$/.test(city)) {
+    cityErrorMsg.textContent = "";
+    validRegex = true;
+  } else {
+    const cityErrorMsg = document.getElementById("cityErrorMsg");
+    cityErrorMsg.textContent = `Champ invalide.`;
+    cityErrorMsg.style.color = "red";
+    validRegex = false;
+  }
+
+  if (/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
+    emailErrorMsg.textContent = "";
+    validRegex = true;
+  } else {
+    const emailErrorMsg = document.getElementById("emailErrorMsg");
+    emailErrorMsg.textContent = `Champ invalide.`;
+    emailErrorMsg.style.color = "red";
+    validRegex = false;
+  }
+  return validRegex;
 }
