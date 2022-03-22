@@ -72,7 +72,7 @@ function emptyCartDisplay() {
   appendEmptyCartMessage(emptyCartMessage);
 }
 
-// ********************************************************************  CREATE / REMOVE ELEMENT FUNCTION(S)
+// ***********************************************************  CREATE / REMOVE / MODIFY ELEMENT FUNCTION(S)
 
 // Creates message tag, attribute(s) and content in case of empty cart
 function createEmptyCartMessage() {
@@ -280,11 +280,9 @@ function deleteFeature(response, deleteButton, cartItem, product) {
 
     if (confirm(`Supprimer ${response.name} de votre panier ?`)) {
       if (storage.length == 1) {
-        return (
-          cartItems.removeChild(cartItem),
-          localStorage.removeItem("products"),
-          undisplayCart()
-        );
+        cartItems.removeChild(cartItem);
+        localStorage.removeItem("products");
+        emptyCartDisplay();
       } else {
         remainingProducts = storage.filter((element) => {
           if (element._id != product._id || element.color != product.color) {
@@ -293,9 +291,9 @@ function deleteFeature(response, deleteButton, cartItem, product) {
         });
         localStorage.setItem("products", JSON.stringify(remainingProducts));
         cartItems.removeChild(cartItem);
-        await totalFeature();
       }
     }
+    await totalFeature();
   });
 }
 
@@ -306,10 +304,16 @@ async function totalFeature() {
   let quantity = 0;
   let total = 0;
 
-  for (let product of storage) {
-    let data = await fetchData(product._id);
-    quantity += Number(product.quantity);
-    total += Number(product.quantity) * Number(data.price);
+  if (storage == null) {
+    quantity = 0;
+    total = 0;
+    console.log("Vidage de couille");
+  } else {
+    for (let product of storage) {
+      let data = await fetchData(product._id);
+      quantity += Number(product.quantity);
+      total += Number(product.quantity) * Number(data.price);
+    }
   }
 
   document.getElementById("totalPrice").textContent = total;

@@ -55,7 +55,7 @@ function displayCart() {
   });
 }
 
-// ********************************************************************  CREATE / REMOVE ELEMENT FUNCTION(S)
+// ***********************************************************  CREATE / REMOVE / MODIFY ELEMENT FUNCTION(S)
 
 // Creates product image tag and attribute(s)
 function createImage(apiProductData) {

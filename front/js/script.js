@@ -44,7 +44,7 @@ function displayCart() {
   }
 }
 
-// ********************************************************************  CREATE & REMOVE ELEMENT FUNCTION(S)
+// ***********************************************************  CREATE / REMOVE / MODIFY ELEMENT FUNCTION(S)
 
 // Creates product link tag and attribute(s)
 function createLink(product) {
