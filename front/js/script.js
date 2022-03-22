@@ -1,26 +1,26 @@
 // ********************************************************************************************* VARIABLE(S)
 
-// STORAGE VARIABLE
+// Storage variable(s)
 let apiProductData = [];
 
-// SELECTION CONSTANTS
+// HTML tag selection constant(s)
 const items = document.getElementById("items");
 
 // ****************************************************************************************** FETCH FUNCTION
 
+// Fetches array of product data from API
 async function fetchApiProductData() {
   await fetch(`http://localhost:3000/api/products`)
     .then((res) => res.json())
     .then((data) => {
       apiProductData = data;
-      console.log("+++++++++++++++ API PRODUCT DATA ARRAY +++++++++++++++");
-      console.table(apiProductData);
     })
     .catch((error) => console.log(error));
 }
 
 // ******************************************************************************************* CORE FUNCTION
 
+// Automatically applies major function(s)
 (async function coreFunction() {
   await fetchApiProductData();
 
@@ -29,31 +29,37 @@ async function fetchApiProductData() {
 
 // ************************************************************************* DISPLAY / UNDISPLAY FUNCTION(S)
 
+// Displays HTML element for each product find in ApiProductData array
 function displayCart() {
   for (const product of apiProductData) {
+    // Creates product elements
     const link = createLink(product);
     const article = createArticle();
     const image = createImage(product);
     const title = createTitle(product);
     const description = createDescription(product);
 
+    // Places product elements in HTML
     appendElement(link, article, image, title, description);
   }
 }
 
 // ********************************************************************  CREATE & REMOVE ELEMENT FUNCTION(S)
 
+// Creates product link tag and attribute(s)
 function createLink(product) {
   const link = document.createElement("a");
   link.href = "./product.html?id=" + product._id;
   return link;
 }
 
+// Creates product article tag
 function createArticle() {
   const article = document.createElement("article");
   return article;
 }
 
+// Creates product image tag and attribute(s)
 function createImage(product) {
   const image = document.createElement("img");
   image.src = product.imageUrl;
@@ -61,6 +67,7 @@ function createImage(product) {
   return image;
 }
 
+// Create product title tag, attribute(s) and content
 function createTitle(product) {
   const title = document.createElement("h3");
   title.textContent = product.name;
@@ -68,6 +75,7 @@ function createTitle(product) {
   return title;
 }
 
+// Creates product description tag, attribute(s) and content
 function createDescription(product) {
   const description = document.createElement("p");
   description.textContent = product.description;
@@ -77,6 +85,7 @@ function createDescription(product) {
 
 // ************************************************************************************** APPEND FUNCTION(S)
 
+// Places product elements in HTML
 function appendElement(link, article, image, title, description) {
   items.appendChild(link);
   link.appendChild(article);

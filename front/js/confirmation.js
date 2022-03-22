@@ -1,15 +1,15 @@
 // ********************************************************************************************* VARIABLE(S)
 
-// ID RETRIEVAL CONSTANT
-const selectedId = window.location.search.replace("?id=", "");
+// ID retrieval constant
+const selectedId = window.location.search.replace("?", "");
 
-// SELECTION CONSTANTS
+// HTML tag selection constant(s)
 const orderId = document.getElementById("orderId");
 
 // ******************************************************************************************* CORE FUNCTION
 
+// Automatically applies major function(s)
 (function coreFunction() {
   orderId.textContent = selectedId;
-
   localStorage.clear();
 })();
