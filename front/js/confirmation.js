@@ -10,6 +10,6 @@ const orderId = document.getElementById("orderId");
 
 // Automatically applies major function(s)
 (function coreFunction() {
-  orderId.textContent = selectedId;
-  localStorage.clear();
+  orderId.textContent = selectedId; // Defines content
+  localStorage.clear(); // Completely empties the localStorage
 })();
