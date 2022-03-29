@@ -3,7 +3,7 @@
 // Fetch products from local storage
 const storage = JSON.parse(localStorage.getItem("products"));
 
-// HTML tag selection/naigation constant(s)
+// HTML tag selection/navigation constant(s)
 const cart = document.querySelector(".cart");
 const cartItems = document.getElementById("cart__items");
 const cartPrice = document.querySelector(".cart__price");
@@ -436,6 +436,8 @@ async function order() {
         method: "POST",
         body: JSON.stringify(request), // Post request data in json format
         headers: {
+          // Headers Indicate that the data is in json format
+          Accept: "application/json",
           "Content-Type": "application/json", // Declares to the client the type of content actually returned
         },
       };

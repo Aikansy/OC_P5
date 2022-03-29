@@ -6,7 +6,7 @@ let apiProductData = [];
 // ID retrieval constant
 const selectedId = window.location.search.replace("?id=", "");
 
-// HTML tag selection/naigation constant(s)
+// HTML tag selection/navigation constant(s)
 const productImg = document.querySelector(".item__img");
 const productTitle = document.getElementById("title");
 const productPrice = document.getElementById("price");

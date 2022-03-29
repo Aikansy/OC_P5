@@ -3,7 +3,7 @@
 // ID retrieval constant
 const selectedId = window.location.search.replace("?", "");
 
-// HTML tag selection constant(s)
+// HTML tag selection/navigation constant(s)
 const orderId = document.getElementById("orderId");
 
 // ******************************************************************************************* CORE FUNCTION
